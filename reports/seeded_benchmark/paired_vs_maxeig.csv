@@ -1,0 +1,8 @@
+metric,comparison,estimate,paired_ci95_low,paired_ci95_high,paired_episode_seeds,interpretation
+weighted_rmse,DQN - MaxEIG,0.0014121788980602623,-0.043401804335194895,0.04608457653698961,100,negative favors the first method
+weighted_rmse,DoubleDQN - MaxEIG,0.007691463209278068,-0.03660679383965333,0.05133167634521826,100,negative favors the first method
+weighted_rmse,DuelingDDQN - MaxEIG,0.0032174257124092274,-0.03933310068955757,0.045655954308546146,100,negative favors the first method
+weighted_rmse,PPO - MaxEIG,-0.002453966979467308,-0.05143473297035837,0.04434904402715102,100,negative favors the first method
+weighted_rmse,QLearning-Linear - MaxEIG,0.012056800363700111,-0.031197733615517847,0.05317099398200021,100,negative favors the first method
+weighted_rmse,Random - MaxEIG,-0.007346000885070216,-0.06094269264354798,0.045580847601020595,100,negative favors the first method
+weighted_rmse,Uncertainty - MaxEIG,0.005365669119308845,-0.04734362793095157,0.058878979127578356,100,negative favors the first method

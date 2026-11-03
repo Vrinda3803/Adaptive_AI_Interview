@@ -1,0 +1,9 @@
+variant,return_mean,return_ci95,success_rate,wrmse,dec_acc,coverage,invalid,mean_posterior_sd,delta_return_vs_full
+Full (PPO),-0.343,0.049,0.263,0.734,0.807,0.96,0.0,0.933,0.0
+w/o Knowledge Graph,-0.407,0.05,0.305,0.762,0.809,0.993,0.0,0.974,-0.064
+w/o EIG feature,-0.279,0.048,0.32,0.718,0.822,0.984,0.0,0.932,0.064
+w/o Uncertainty features,-0.33,0.05,0.322,0.738,0.809,0.993,0.0,0.946,0.013
+w/o Action masking,-0.358,0.049,0.302,0.742,0.807,0.991,0.003,0.95,-0.015
+w/o Coverage reward,-0.333,0.048,0.202,0.706,0.819,0.878,0.0,0.918,0.01
+w/o Cost penalty,-0.384,0.048,0.292,0.717,0.811,0.975,0.0,0.915,-0.041
+w/o Resume prior,-0.569,0.059,0.193,0.855,0.759,0.941,0.0,1.077,-0.226

@@ -1,0 +1,10 @@
+method,cumulative_regret
+Random,189.08
+Uncertainty-Heuristic,130.12
+MaxEIG-Greedy,132.89
+Oracle-Guided*,131.95
+PPO,133.38
+DQN,155.5
+DoubleDQN,149.07
+DuelingDDQN,152.16
+QLearning-Linear,137.37

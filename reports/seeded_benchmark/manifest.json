@@ -1,0 +1,38 @@
+{
+  "created_utc": "2026-11-03T10:45:33.394512+00:00",
+  "python": "3.11.9",
+  "episodes_per_checkpoint": 100,
+  "base_episode_seed": 91000,
+  "bootstrap_samples": 10000,
+  "domains": [
+    "Cybersecurity",
+    "Mobile Development",
+    "Specialized Technologies"
+  ],
+  "primary_endpoint": "weighted_rmse (lower is better)",
+  "primary_endpoint_status": "exploratory re-analysis; not preregistered",
+  "checkpoint_sha256": {
+    "DoubleDQN_seed0.pt": "a1df55f0c44b31e01f9837091a653a053bc0a6eaf817afb32a746d77b27b1ba4",
+    "DoubleDQN_seed1.pt": "1a23031ce584cceaab1a985e223610803ca7967006ad77c1e46b437c55ade4e0",
+    "DoubleDQN_seed2.pt": "81b60f68889c7c32d0ce9c9aed69504676bd22c693586aa79996331be1f64abe",
+    "DQN_seed0.pt": "943b8be8cdb72f66af55e40bd291a21728b088a9b207815df5e3dfe971ecc9c8",
+    "DQN_seed1.pt": "a7dcfc2f0cd9057dcaccce5cee3113e41e7022e092f2d29d00b7e06a6ff4330c",
+    "DQN_seed2.pt": "475eb5121ab4dd187e6e1a03f7462b9d00fd26844e828d87425e047fd97b61a6",
+    "DuelingDDQN_seed0.pt": "50432f995c48cd5e35f6cd71d22f582b31a4934ada8e98ef1fd349eb6b3f3baf",
+    "DuelingDDQN_seed1.pt": "acd5e9659643f5460d62bce656a3c9d3a81467f23b5fd19e4b1c3fa683809249",
+    "DuelingDDQN_seed2.pt": "d16d37477cfe695ddba5b50029a94e2560a7668540f4b8df986e3bf714dc8d03",
+    "PPO_seed0.pt": "e6b36172d926e06fdb9f405818a142593ebcd24bb7b794e5d6ba7ca3d630397c",
+    "PPO_seed1.pt": "dfbda2c89cc6bd68b7b90d63455e54882f5c213a55d48c8cbb63be2db2e7facd",
+    "PPO_seed2.pt": "61fc9970b06442aecd469d6956ecd7231f67d7afbba04ab96638f278a23e0437",
+    "QLearning-Linear_seed0.pt": "d8d5491e72383948a3ae77436383f995a3b5f2cdba3e7f4948759c51d904ac11",
+    "QLearning-Linear_seed1.pt": "3f798c49f771142a3269da94172e99d6684e5efef769f21cb327b0d85de63135",
+    "QLearning-Linear_seed2.pt": "ae79581c65cca8b7a771c9c5bb41d244ed4edfe56ed9e7d3f69d8bc265891666"
+  },
+  "notes": [
+    "Every method receives the same candidate episode seeds; answer randomness is seeded per episode.",
+    "The trained policies have three checkpoint/training-seed replicates each.",
+    "The hierarchical bootstrap resamples checkpoint seeds and episodes for method summaries.",
+    "Paired difference intervals average available checkpoint seeds per episode and therefore condition on those trained checkpoints.",
+    "The environment and outcomes are synthetic; results do not establish real-world hiring validity or fairness."
+  ]
+}

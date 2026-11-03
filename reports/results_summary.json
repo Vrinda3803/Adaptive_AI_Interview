@@ -1,0 +1,33 @@
+{
+  "headline": {
+    "best_rl": "PPO",
+    "return_mean": -0.343,
+    "success_rate": 0.27,
+    "wrmse": 0.737,
+    "eval_interviews": 300,
+    "max_eig_return": -0.341,
+    "uncertainty_heuristic_return": -0.332,
+    "random_return": -0.529
+  },
+  "paired_tests": {
+    "ppo_vs_max_eig": {
+      "t": -0.06,
+      "p": 0.9486
+    },
+    "ppo_vs_random": {
+      "t": 6.06,
+      "p": 4.061e-09
+    }
+  },
+  "figures": [
+    "ablation.png",
+    "candidate_report.png",
+    "cumulative_regret.png",
+    "final_comparison.png",
+    "generalization.png",
+    "knowledge_graph.png",
+    "learning_curve_steps.png",
+    "learning_curves.png",
+    "robustness.png"
+  ]
+}
