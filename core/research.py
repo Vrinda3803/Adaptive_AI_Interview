@@ -1,13 +1,8 @@
-"""Evaluation helpers for the live custom PyTorch policy on held-out domains."""
-
 import numpy as np
-
 from .environment import EnvCfg, InterviewEnv, HELDOUT_DOMAINS
-
 
 def evaluate_heldout(policy, episodes=25, seed=20261103):
     return _evaluate(policy, EnvCfg(allowed_domains=HELDOUT_DOMAINS), episodes, seed)
-
 
 def _evaluate(policy, cfg, episodes, seed):
     env = InterviewEnv(cfg)
@@ -73,7 +68,6 @@ def evaluate_noise_robustness(policy, episodes=10, seed=41000):
             "mean_weighted_rmse": _finite_mean([r["weighted_rmse"] for r in results]),
         })
     return rows
-
 
 def _finite_mean(values):
     values = [float(v) for v in values if np.isfinite(v)]
