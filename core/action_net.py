@@ -1,17 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from .bayesian_irt import NG, NF, A_MAX
 
-
 class ActionNet(nn.Module):
-    """
-    Permutation-equivariant scorer: every (skill, difficulty, type) is described by FEATURES
-    (not hard-coded skill IDs), so the policy transfers to unseen skills.
-    Returns per-action scores and a state value.
-    """
-
     def __init__(self, H=96):
         super().__init__()
         self.gctx = nn.Sequential(nn.Linear(NG, H), nn.ReLU())
@@ -29,8 +21,6 @@ class ActionNet(nn.Module):
 
 
 class LinearQ(nn.Module):
-    """Q-learning with linear function approximation: Q(s,a) = w . [phi(a), phi(a)*remaining_budget]."""
-
     def __init__(self):
         super().__init__()
         self.lin = nn.Linear(2 * NF, 1)
@@ -56,8 +46,6 @@ def to_t(obs):
 
 
 class Scorer:
-    """Greedy deployable policy wrapping a trained network."""
-
     def __init__(self, net, kind="ppo", name="PPO"):
         self.net = net
         self.kind = kind
@@ -77,7 +65,6 @@ class Scorer:
 
 
 def load_policy(path):
-    """Load a policy checkpoint saved from the research experiments."""
     ck = torch.load(path, map_location="cpu")
     net = LinearQ() if ck.get("algo") == "QLearning-Linear" else ActionNet()
     net.load_state_dict(ck["state"])
