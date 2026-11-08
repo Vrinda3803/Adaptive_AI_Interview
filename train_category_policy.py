@@ -1,5 +1,3 @@
-"""Train the category-selection Q policy used with the PPO interviewer."""
-
 import argparse
 import json
 from pathlib import Path
