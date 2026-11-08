@@ -4,7 +4,7 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
-# 12 technical domains plus a separate behavioral assessment dimension.
+#12 technical domains plus behavioral assessment dimension.
 DOMAIN_SPEC = {
     "Programming Languages": [
         ("Python", 1, ["python", "py", "python3"]),
@@ -77,7 +77,7 @@ DOMAIN_SPEC = {
     ],
 }
 
-# (prerequisite -> skill) edges of the knowledge graph
+#prerequisite -> skill edges of the knowledge graph
 PREREQS = [
     ("Python", "Machine Learning"),
     ("Statistics", "Machine Learning"),
