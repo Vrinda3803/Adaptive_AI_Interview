@@ -1,15 +1,6 @@
-"""Tabular Q-learning policy for choosing the assessment category.
-
-The trained PPO checkpoint chooses skill, difficulty, and conceptual/coding type.
-This second RL policy chooses among context-legal content categories. It never
-generates wording; Gemini and curated question banks only realize its choice.
-"""
-
 import json
 from pathlib import Path
-
 import numpy as np
-
 
 GENERAL_CATEGORIES = (
     "resume_based",
@@ -24,18 +15,15 @@ DEFAULT_MODEL = Path(__file__).resolve().parents[1] / "models" / "category_q_pol
 
 
 def legal_categories(skill, question_type, state):
-    """Return the category action mask allowed by the selected PPO action/context."""
     if int(question_type) == 1:
         return ["coding"]
     if skill == "Communication & Leadership":
         return ["hr_behavioral"]
-
     options = ["skill_based", "theoretical", "scenario_based"]
     if str(state.get("resume_text", "")).strip():
         options.append("resume_based")
     if str(state.get("projects", "")).strip():
         options.append("project_based")
-
     history = state.get("history", [])
     followup_count = len(state.get("followup_skills", []))
     last = history[-1] if history else None
@@ -50,7 +38,6 @@ def legal_categories(skill, question_type, state):
 
 
 def encode_state(history, has_resume, has_projects, followup_available, last_score, remaining_fraction):
-    """Compact observable category-policy state; no hidden candidate mastery."""
     covered = 0
     for item in history:
         category = item.get("category", "") if isinstance(item, dict) else str(item)
@@ -66,7 +53,6 @@ def encode_state(history, has_resume, has_projects, followup_available, last_sco
 
 
 def train_category_q_policy(episodes=50000, seed=20261103, alpha=0.12, gamma=0.92):
-    """Train a contextual category selector in a synthetic coverage/relevance task."""
     rng = np.random.default_rng(seed)
     q = {}
     categories = GENERAL_CATEGORIES + ("follow_up",)
@@ -173,7 +159,6 @@ class CategoryRLAgent:
             state.get("remaining_fraction", 1.0),
         )
         learned = self.q_values.get(str(state_id), {})
-        # Fixed tie order makes online inference deterministic and reproducible.
         category = max(options, key=lambda name: learned.get(name, 0.0)) if options else None
         return {
             "category": category,
