@@ -1,6 +1,5 @@
 import time
 import numpy as np
-
 from core.knowledge_graph import REG
 from core.bayesian_irt import DIFF_NAMES, TYPE_NAMES
 from core.action_net import ActionNet, Scorer
@@ -33,7 +32,6 @@ class LiveInterviewController:
         mode="practice",
         target_competency=DEFAULT_TARGET_COMPETENCY,
     ):
-        # Extract text from candidate_profile dict or string
         if isinstance(candidate_profile, dict):
             resume_text = candidate_profile.get("resume_text", "")
             if not resume_text:
@@ -42,7 +40,6 @@ class LiveInterviewController:
         else:
             resume_text = str(candidate_profile)
             self.profile_dict = {"resume_text": resume_text}
-
         self.resume_text = resume_text
         self.role_text = role_text
         self.max_questions = max_questions
@@ -50,18 +47,13 @@ class LiveInterviewController:
         self.interview_start_time = time.monotonic()
         self.time_remaining_minutes = float(interview_duration_minutes)
 
-        # 1. Initialize RL Policy Scorer
         if policy is not None:
             self.policy = policy
         else:
             net = ActionNet()
             self.policy = Scorer(net, "ppo", "PPO")
-
-        # 2. Initialize Research QuestionBank and Evaluator
         self.bank = QuestionBank(reg=REG, cache_path=str(Path(__file__).resolve().parents[1] / "question_cache.json"))
         self.evaluator = AnswerEvaluator(use_llm=True)
-
-        # 3. Initialize Primary Research InterviewSession (no hardcoded senior level)
         self.session = InterviewSession(
             policy=self.policy,
             bank=self.bank,
@@ -80,8 +72,6 @@ class LiveInterviewController:
         self.current_action = None
         self.current_evaluation = None
         self.finished = False
-
-        # Compatibility bridge for existing legacy references
         self.env = self.session.env
         self.mode = mode
 
@@ -202,10 +192,7 @@ class LiveInterviewController:
 
         q_data = self.current_q_data
         skill = q_data["skill"]
-
-        # Submit to research session (updates Belief over 71-point logit grid with evaluator confidence)
         sub_res = self.session.submit(candidate_answer, reasoning=reasoning)
-
         score = float(sub_res["score"])
         c_eval = float(sub_res.get("evaluator_confidence", 0.85))
         eval_dict = sub_res.get("evaluation", {})
@@ -215,8 +202,6 @@ class LiveInterviewController:
         sd_before = sub_res["uncertainty_before"]
         sd_after = sub_res["uncertainty_after"]
         stopped_early = sub_res.get("stopped_early", False)
-
-        # Reset current question state
         self.current_question = None
         self.current_q_data = None
         self.update_timer()
