@@ -28,7 +28,6 @@ MODEL = APP / "models" / "adaptive_ppo_seed1.pt"
 
 
 class FixedActionPolicy:
-    """Constrained-policy test harness; selects a requested legal RL action."""
     name = "test-action-policy"
 
     def __init__(self, skill=None, difficulty=1, question_type=0, difficulty_sequence=None):
@@ -87,7 +86,6 @@ class MockGemini:
 
 class FirstLegalPolicy:
     name = "first-legal-test-policy"
-
     def __call__(self, obs, env):
         return int(np.flatnonzero(obs["m"])[0])
 
