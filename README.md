@@ -1,92 +1,282 @@
-# Adaptive AI Interview Simulator — Presentation Application
 
-This is the clean, independent Streamlit application built from the research implementation and the project's original guide and `RL_Nov2_1.ipynb`. Its hierarchical RL controller makes the adaptive interview decisions: a custom PyTorch PPO policy selects skill, difficulty, and question type, and a trained category Q-policy selects the question category. Bayesian IRT, the Knowledge Graph, coding evaluation, Gemini integration, and research reports support that loop.
+# Adaptive AI Interview Simulator
 
-## Run on Windows
+## Project Overview
 
-From the existing research project root:
+The Adaptive AI Interview Simulator is a Streamlit-based application developed to conduct personalized technical interviews using Reinforcement Learning and Artificial Intelligence.
+
+Unlike conventional interview systems that follow a fixed set of questions, this application selects questions dynamically based on the candidate's skills, previous responses, and estimated competency levels.
+
+The system uses Proximal Policy Optimization (PPO) for adaptive question selection, a Knowledge Graph for representing skill relationships, Bayesian Item Response Theory (IRT) and Bayesian Knowledge Tracing (BKT) for competency assessment, and Google Gemini for question generation and answer evaluation.
+
+The application supports practice interviews, candidate assessment, and research-based evaluation of reinforcement learning algorithms.
+
+## Implementation
+
+The interview process begins with the candidate uploading a resume or manually entering their skills and project details. A job description can also be provided to identify the skills relevant to a particular role.
+
+The main components of the system are described below.
+
+### 1. Resume Processing and Knowledge Graph
+
+The application extracts relevant skills, projects, and experience from the candidate's profile. These skills are mapped to a Knowledge Graph containing technical concepts and their relationships.
+
+The extracted information is used to identify the skills that should be assessed during the interview.
+
+### 2. Adaptive Question Selection using PPO
+
+A trained PPO policy selects the next interview action based on the current assessment state. Each action specifies the skill to assess, the difficulty level, and the question type.
+
+The policy considers estimated competency, uncertainty, skill coverage, and available questions.
+
+A separate Q-learning agent selects the question category, such as skill-based, resume-based, project-based, scenario-based, coding, or behavioral.
+
+### 3. Question Generation
+
+Questions are retrieved from the question bank or generated using Gemini based on the selected skill, difficulty, question type, and category.
+
+The application checks previously asked questions to reduce repetition. If a suitable question is unavailable, the system attempts another compatible category or valid assessment action.
+
+### 4. Answer Evaluation
+
+Candidate responses are evaluated using Gemini to assess technical correctness, relevance, and reasoning. Coding questions are evaluated using executable test cases along with reasoning assessment.
+
+The evaluation produces an answer score, evaluator confidence, and feedback, which are used to update the candidate's competency estimates.
+
+### 5. Competency Tracking
+
+Bayesian IRT maintains continuous estimates of candidate competency and uncertainty. The Knowledge Graph supports the propagation of assessment evidence between related skills.
+
+BKT independently tracks the probability of mastery for individual skills.
+
+Both models are updated after evaluated responses. Bayesian IRT provides the primary competency state used for adaptive question selection, while BKT provides an additional mastery estimate for reporting.
+
+### 6. Interview Completion and Reporting
+
+The interview continues until the configured question limit, time limit, or applicable stopping condition is reached.
+
+At the end of the interview, the application generates a report containing skill-wise competency estimates, uncertainty values, mastery probabilities, evaluation feedback, and interview history.
+
+## Application Features
+
+The application provides three main modes:
+
+- **Practice Interview:** Conducts personalized technical interviews using resume information, adaptive questions, coding assessment, and feedback.
+- **Hiring and Candidate Comparison:** Supports role-specific interviews, competency requirements, candidate reports, and comparison of completed assessments.
+- **Research Dashboard:** Displays reinforcement learning evaluation results, algorithm comparisons, competency estimation metrics, and performance visualizations.
+
+## Technologies and Dependencies
+
+The project is implemented in Python and uses the following technologies:
+
+| Technology | Purpose |
+|---|---|
+| Python 3.11 | Main programming language |
+| Streamlit | Web application interface |
+| PyTorch | PPO neural network implementation |
+| NumPy | Numerical computations |
+| Pandas | Data processing and result analysis |
+| Google Gemini API | Question generation and answer evaluation |
+| Bayesian IRT | Competency estimation and uncertainty tracking |
+| Bayesian Knowledge Tracing | Skill mastery estimation |
+| Knowledge Graph | Representation of skill relationships |
+| Tesseract OCR | Text extraction from scanned resumes |
+
+The required Python packages are listed in `requirements.txt`.
+
+## Project Structure
+
+The main files and directories are organized as follows:
+
+```text
+Adaptive_AI_Interview_Final/
+│
+├── app.py
+├── requirements.txt
+├── .env.example
+│
+├── core/
+│   ├── action_net.py
+│   ├── environment.py
+│   ├── knowledge_graph.py
+│   ├── bayesian_irt.py
+│   ├── bkt.py
+│   ├── category_agent.py
+│   ├── question_bank.py
+│   ├── evaluator.py
+│   ├── assessment.py
+│   ├── benchmark.py
+│   └── session.py
+│
+├── interview/
+├── llm/
+├── resume/
+├── models/
+├── reports/
+├── tests/
+│
+├── demo_interview.py
+├── train_category_policy.py
+└── run_research_benchmark.py
+```
+
+### File and Directory Description
+
+| File / Directory | Description |
+|---|---|
+| `app.py` | Main Streamlit application containing the practice interview, hiring, and research dashboard interfaces. |
+| `core/assessment.py` | Handles question normalization, similarity checks, and duplicate detection. |
+| `core/category_agent.py` | Implements the Q-learning agent for selecting question categories. |
+| `core/action_net.py` | Defines the PPO neural network and handles policy-based action selection. |
+| `core/environment.py` | Implements the interview environment, state representation, action masks, reward calculation, and episode termination. |
+| `core/bayesian_irt.py` | Maintains Bayesian competency estimates and uncertainty values. |
+| `core/bkt.py` | Tracks skill mastery probabilities using Bayesian Knowledge Tracing. |
+| `core/knowledge_graph.py` | Represents technical skills and their relationships. |
+| `core/question_bank.py` | Retrieves or generates interview questions based on the selected assessment action. |
+| `core/evaluator.py` | Evaluates candidate answers, including coding submissions, and generates assessment scores. |
+| `core/session.py` | Manages interview sessions, question history, competency updates, and final reports. |
+| `core/benchmark.py` | Contains functions for benchmark evaluation and result generation. |
+| `interview/` | Contains the controller connecting the Streamlit interface with the interview session. |
+| `llm/` | Handles Gemini API integration and candidate profile extraction. |
+| `resume/` | Processes resumes in PDF, DOCX, and TXT formats. |
+| `models/` | Stores the selected PPO checkpoint, category Q-learning policy, and benchmark model checkpoints. |
+| `reports/` | Contains research evaluation tables and visualizations used by the dashboard. |
+| `tests/` | Contains unit and integration tests for the application. |
+| `demo_interview.py` | Runs an offline interview demonstration using the trained PPO policy and mocked Gemini responses. |
+| `train_category_policy.py` | Trains the category-selection Q-learning policy. |
+| `run_research_benchmark.py` | Executes benchmark evaluations of the reinforcement learning algorithms. |
+
+The trained PPO policy and category Q-learning policy are stored in the `models/` directory.
+
+The application uses these policies to make adaptive interview decisions.
+
+## Installation and Setup
+
+### 1. Prerequisites
+
+Before running the application, ensure that the following are installed:
+
+- Python 3.11
+- pip
+- An internet connection for Gemini API functionality
+- Tesseract OCR (optional, for scanned PDF resumes)
+
+### 2. Open the Project Directory
+
+Open PowerShell or a terminal in the project folder:
 
 ```powershell
 cd C:\Users\user\Adaptive_AI_Interview_RL\Adaptive_AI_Interview_Final
+```
+
+Replace the path with the actual location of the project on your system.
+
+### 3. Create a Virtual Environment
+
+Create a Python virtual environment:
+
+```powershell
 py -3.11 -m venv .venv
+```
+
+Activate the environment:
+
+```powershell
 .\.venv\Scripts\Activate.ps1
+```
+
+### 4. Install Dependencies
+
+Upgrade pip and install the required packages:
+
+```powershell
 python -m pip install --upgrade pip
 pip install -r requirements.txt
+```
+
+### 5. Configure the Gemini API
+
+Create a `.env` file using the provided example:
+
+```powershell
 Copy-Item .env.example .env
-# Edit .env and set GEMINI_API_KEY to enable live Gemini calls.
+```
+
+Open `.env` and enter the Gemini API key:
+
+```env
+GEMINI_API_KEY=your_api_key_here
+```
+
+The API key is required for live Gemini-based question generation and answer evaluation.
+
+If no API key is configured, the application uses its available local question bank and fallback evaluation mechanisms.
+
+For scanned PDF resumes, Tesseract OCR must be installed. If necessary, specify its executable path using `TESSERACT_CMD` in `.env`.
+
+Do not upload the `.env` file containing your API key to GitHub.
+
+## Running the Application
+
+From the project directory, with the virtual environment activated, execute:
+
+```powershell
 streamlit run app.py
 ```
 
-Open the local Streamlit URL (usually `http://localhost:8501`). No API key is included. The app only reads `.env` from this project folder and never searches the parent research workspace. Without Gemini credentials, the app uses category-specific curated questions, local resume parsing, and a category-aware evaluator fallback. Gemini live generation was not tested without an API key; mocked Gemini behavior is covered by the test suite.
+The application opens in the default web browser.
 
-Live Gemini requests try `gemini-3.5-flash-lite`, then `gemini-3.6-flash`, then `gemini-3.8-flash`; an unavailable endpoint moves to the next model. These IDs are verified against [Google's model catalog](https://ai.google.dev/gemini-api/docs/models).
+If it does not open automatically, navigate to:
 
-For scanned PDFs, install the Tesseract OCR executable and set `TESSERACT_CMD` in `.env` if it is not on `PATH`. Text PDFs, DOCX, and TXT do not require OCR.
+```text
+http://localhost:8501
+```
 
-## Tests and offline demonstration
+The user can then select the required application mode, provide candidate information, configure interview settings, and begin the assessment.
+
+## Running Tests
+
+To execute the unit and integration tests:
 
 ```powershell
-cd C:\Users\user\Adaptive_AI_Interview_RL\Adaptive_AI_Interview_Final
-.\.venv\Scripts\Activate.ps1
 python -m unittest discover -s tests -v
+```
+
+To run the offline interview demonstration:
+
+```powershell
 python demo_interview.py
 ```
 
-The demo uses the selected PPO checkpoint to rank actions under explicit stage masks so one run demonstrates resume-based, technical, HR, and coding turns. Its Gemini responses are mocked; the demo prints this distinction. In normal interviews there are no stage masks: the trained policy selects skill, difficulty, and conceptual/coding type at each turn.
+The demonstration uses the trained PPO policy and mocked Gemini responses, allowing the interview workflow to be tested without making live API requests.
 
-See [FEATURE_MATRIX.md](FEATURE_MATRIX.md) for implementation and test results.
+## Model Training and Evaluation
 
-## Adaptive decision flow
+The application uses a pretrained PPO policy for selecting interview actions. The policy is implemented using a custom PyTorch actor–critic network.
 
-The primary PPO checkpoint remains unchanged. Its `ActionNet` scores `g[8]`, `f[48,19]`, and the valid-action mask, then selects one legal action from the original 48-action space: `(skill slot, difficulty, conceptual/coding type)`. A second, trained tabular Q-learning policy selects the assessment category from context-legal choices using previous category coverage, resume/project context, follow-up eligibility, answer score, and remaining budget. Its 50,000-episode policy is saved in `models/category_q_policy.json` and can be reproduced with `python train_category_policy.py --episodes 50000 --seed 20261103`. Coding and behavioral categories are constrained by the PPO-selected coding type and Communication & Leadership skill, respectively. When one category's unique questions are exhausted, the category policy tries another legal category for the same PPO-selected action; if needed, PPO then chooses another action under a temporary validity mask. Gemini only generates question wording and evaluates the candidate's answer after the RL decisions. It cannot choose the next action or category.
+The PPO policy selects an action representing the skill, difficulty level, and question type. The trained policy is loaded from the `models/` directory.
 
-The learned policies control adaptive question selection. The live interview honors the selected question budget, and confidence-based early stopping can only occur after at least eight questions (or the entire smaller configured budget). Legal-action masks and the time limit remain hard environment constraints.
+A separate Q-learning policy is used for question-category selection. It can be trained using:
 
-Communication & Leadership is a non-coding assessment skill added in a separate Behavioral Competencies domain for HR coverage. It has no graph edges to technical skills, so behavioural evidence cannot bleed into technical posteriors. This does not change ActionNet tensor shapes or checkpoint keys. The policy's feature-based design scores it from its feature row; all 40 original technical skills and graph relationships remain unchanged. The dashboard distinguishes the 40 technical skills from this added behavioral assessment dimension.
+```powershell
+python train_category_policy.py --episodes 50000 --seed 20261103
+```
 
-Question IDs, normalized text, category, selected skill, difficulty, question type, action ID, answer, evaluation, and initial/follow-up status are retained in `InterviewSession.question_history` for the Streamlit session. Before display, generated questions pass exact and synonym-normalized lexical similarity checks. Gemini gets two attempts with explicit exclusions; if a selected action's compatible fallbacks are exhausted, the session temporarily masks that action and asks the RL policy for its next-best legal action. The interview ends cleanly only if no legal action can generate a new question. The same session/controller object is held in Streamlit session state between turns.
+The research component includes comparisons between:
 
-## BKT and Bayesian IRT
+- PPO
+- DQN
+- Double DQN
+- Dueling Double DQN
+- Linear Q-learning
+- Baseline question-selection strategies
 
-Both trackers update from evaluated answers, but they are not substituted for one another:
+Evaluation metrics include cumulative reward, weighted RMSE, decision accuracy, and convergence behavior.
 
-- **BKT** (initial mastery 0.20, learning 0.15, guess 0.20, slip 0.10) provides a parallel, interpretable discrete mastery estimate shown in the report.
-- **Bayesian IRT** is the research model used for the RL observation, continuous competency estimate, uncertainty, 95% intervals, expected information gain, stopping, and evidence propagation through the Knowledge Graph. Its 71 point grid and confidence-weighted likelihood remain the primary adaptive state.
+The Research Dashboard provides access to the available evaluation results and visualizations.
 
-The synthetic research environment retains hidden mastery: it generates latent candidate state internally and does not include it in observations. Interview budgets, time limits, action masks, the 40-skill knowledge graph, and held-out domain evaluation are preserved.
+## Conclusion
 
-## Modes
+The Adaptive AI Interview Simulator combines reinforcement learning, Bayesian competency estimation, Knowledge Graphs, and language models to conduct interviews that adapt to individual candidates.
 
-- **Practice Interview:** resume upload or manual profile, personalized adaptive assessment, coding, feedback, competency report, and transcript.
-- **Hiring & Candidate Comparison:** job context, question/time/competency settings, human-review indicators, and CSV comparison across completed candidates in the current Streamlit session.
-- **Research Dashboard:** select a compatible custom `.pt` checkpoint in `models/`, inspect static multi-algorithm benchmark/ablation/generalization/noise results, view research plots, run the selected policy on held-out synthetic domains, inspect live action and uncertainty traces, and export results.
-
-The dashboard also shows the paired, three-checkpoint-seed benchmark generated by `run_research_benchmark.py`. See [RESEARCH_PROTOCOL.md](RESEARCH_PROTOCOL.md) for the endpoint definitions, bootstrap procedure, checkpoint provenance, and limitations. The report is exploratory: only three trained checkpoint seeds are available per RL method, and all candidates are synthetic. It is not a real-world hiring validity or fairness study.
-
-The standalone folder currently includes the selected PPO checkpoint. Additional compatible custom `.pt` checkpoints can be placed in `models/` and selected from the research page; older Stable-Baselines3 ZIP checkpoints use a different architecture and are not accepted by this custom policy loader.
-
-## Checkpoint selection and compatibility
-
-`models/adaptive_ppo_seed1.pt` is copied from `outputs/checkpoints/PPO_seed1.pt`. The PPO seeds were compared with the original 40-skill registry on 100 deterministic simulated interviews through the research `InterviewEnv` and `load_policy` path. Seed 1 achieved the highest success rate (15%, versus 10% for seeds 0 and 2) and lowest weighted RMSE (0.697, versus 0.745 and 0.762). It was selected based on same-protocol behavior, not timestamp. Metadata identifies PPO seed 1, 4,000 training episodes.
-
-The architecture is `ActionNet(H=96)`, with an 8-value global feature, 19 features per action, 48 actions, and a masked greedy PPO scorer. The copied checkpoint's tensors load strictly. The semantic action mapping is `((skill_slot * 3) + difficulty) * 2 + question_type`. The registry extension changes neither dimensions nor state-dict keys. The checkpoint's SHA-256 was verified equal to the original.
-
-## Structure
-
-- `app.py` — candidate/hiring flows and researcher dashboard
-- `core/assessment.py` — question normalization and duplicate checks
-- `core/category_agent.py`, `models/category_q_policy.json` — learned category-selection Q-policy
-- `core/action_net.py`, `core/environment.py` — trained policy, masks, synthetic/real interview states
-- `core/bayesian_irt.py`, `core/bkt.py`, `core/knowledge_graph.py` — separate tracking models and skill graph
-- `core/question_bank.py`, `core/evaluator.py`, `core/session.py` — question generation, code runner, scoring, history, reports
-- `interview/` — controller connecting UI and shared session engine
-- `llm/` — Gemini client and grounded profile extraction
-- `resume/` — PDF, DOCX, TXT parsing
-- `models/` — selected PPO checkpoint, the category Q-policy, and 15 benchmark checkpoints (five RL methods × three seeds)
-- `reports/` — only dashboard tables and figures
-- `tests/` — offline unit/integration checks
-- `demo_interview.py` — complete mocked-Gemini demonstration using PPO action scores
-- `train_category_policy.py` — reproducible training entry point for the category Q-policy
-- `run_research_benchmark.py`, `core/benchmark.py` — paired seed-based research evaluation and report generation
-
-
+The system provides a complete workflow from candidate profiling and question selection to answer evaluation and competency reporting, with additional tools for comparing interview strategies and analyzing their performance.
