@@ -1,5 +1,3 @@
-"""Question text normalization and duplicate detection for interview sessions."""
-
 def normalize_question(text):
     import re
     words = re.findall(r"[a-z0-9]+", (text or "").casefold())
@@ -15,7 +13,6 @@ def normalize_question(text):
 
 
 def is_duplicate(question, history):
-    """Exact or high lexical-semantic overlap check; same-skill follow-ups are allowed."""
     from difflib import SequenceMatcher
     candidate = normalize_question(question)
     if not candidate:
