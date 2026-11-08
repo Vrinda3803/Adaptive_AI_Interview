@@ -1,5 +1,3 @@
-"""Run the reproducible held-out, paired policy benchmark."""
-
 import argparse
 import hashlib
 import json
