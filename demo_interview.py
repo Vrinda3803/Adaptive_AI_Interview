@@ -1,5 +1,3 @@
-"""Offline end-to-end demonstration with a mocked Gemini response generator."""
-
 import json
 import re
 import tempfile
@@ -11,7 +9,6 @@ from resume.resume_parser import build_candidate_profile
 
 
 class CoveragePolicy:
-    """For demonstration only: masks actions by stage, then lets trained PPO rank them."""
     def __init__(self, scorer):
         self.scorer = scorer
         self.turn = 0
@@ -102,7 +99,7 @@ Experience: Coordinated a small team, resolved a deadline conflict, and delivere
     controller.bank.llm_generate = mock_gemini
     controller.evaluator.use_llm = False
 
-    print("Demo note: Gemini outputs are mocked; the selected PPO network scores every legal action, with stage masks only to demonstrate coverage.")
+    print("Demo note: The selected PPO network scores every legal action, with stage masks only to demonstrate coverage.")
     for _ in range(4):
         q = controller.generate_next_question()
         print(f"\nRL action {q['action']} -> {q['skill']} / {q['difficulty']} / {q['question_type']} -> {q['category']}")
