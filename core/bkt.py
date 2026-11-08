@@ -1,6 +1,3 @@
-"""Discrete BKT tracker retained as a parallel signal to continuous Bayesian IRT."""
-
-
 class BayesianKnowledgeTracer:
     def __init__(self, p_init=0.20, p_learn=0.15, p_guess=0.20, p_slip=0.10):
         if not all(0.0 < x < 1.0 for x in (p_init, p_learn, p_guess, p_slip)):
