@@ -98,7 +98,6 @@ class InterviewEnv:
             seed = self._seed_counter
             self._seed_counter += 1
         rng = np.random.default_rng(seed)
-        # Keep response noise reproducible and paired to the episode seed.
         self.rng = rng
         self.sim = True
         doms = list(c.allowed_domains) if c.allowed_domains else list(reg.domains)
