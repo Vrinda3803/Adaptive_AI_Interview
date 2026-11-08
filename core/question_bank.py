@@ -8,17 +8,9 @@ import subprocess
 import hashlib
 import datetime
 import numpy as np
-
 from .knowledge_graph import REG
 from .bayesian_irt import DIFF_NAMES, TYPE_NAMES, DIFF_B
 from .assessment import is_duplicate, normalize_question
-
-# =====================================================================
-# REALISTIC, CONVERSATIONAL QUESTION BANK
-# Structured across real engineering domains:
-# (skill, difficulty) -> dict with conversational workplace questions,
-# expected evidence, practical scenarios, and evaluation criteria.
-# =====================================================================
 
 REALISTIC_QUESTION_BANK = {
     ("Python", 0): {
@@ -143,7 +135,6 @@ REALISTIC_QUESTION_BANK = {
     },
 }
 
-# Practical, realistic coding challenges: (skill, difficulty) -> dict
 CODING = {
     ("Python", 0): dict(
         q="In many text preprocessing pipelines, we need to clean and reverse token order. Write a Python function `reverse_words(s)` that takes a string of words and returns them in reverse order, joined by single spaces.",
@@ -176,8 +167,6 @@ CODING = {
 
 
 class QuestionExhaustedError(RuntimeError):
-    """Raised when one action has no non-duplicate item left in its bank."""
-
 
 FALLBACK_ASPECTS = (
     "trade-offs", "edge cases", "performance", "failure recovery", "testing strategy",
@@ -209,7 +198,6 @@ print(json.dumps({"passed": passed, "total": len(tests)}))
 
 
 def run_code_tests(code, tests, timeout=5):
-    """Isolated subprocess execution of candidate code with timeout."""
     try:
         tree = ast.parse(code)
         for node in ast.walk(tree):
@@ -246,7 +234,6 @@ def run_code_tests(code, tests, timeout=5):
 
 
 def validate_question(q):
-    """Validation gate ensuring clear, conversational, unambiguous questions."""
     try:
         assert isinstance(q, dict), "Question must be a dictionary"
         assert all(k in q for k in ["question", "expected_evidence"])
@@ -270,14 +257,6 @@ def validate_question(q):
 
 
 class QuestionBank:
-    """
-    Realistic Technical Interview Question Generator & Bank:
-    - Conversational, workplace-grounded technical questions.
-    - Contextualized to candidate resume, job description, and previous answer.
-    - Supported categories: resume-based, project-based, debugging, architecture, follow-ups.
-    - Strictly ONE question at a time.
-    """
-
     def __init__(self, reg=REG, cache_path="outputs/question_cache.json"):
         self.reg = reg
         self.cache_path = cache_path
@@ -312,8 +291,6 @@ class QuestionBank:
         diff_str = DIFF_NAMES[d]
         type_str = TYPE_NAMES[ty]
         category = state.get("category", "skill_based")
-
-        # Context details
         resume_snippet = state.get("resume_text", "")[:1800]
         jd_snippet = state.get("job_description", "")[:700]
         last_answer = state.get("last_answer", "")
@@ -321,8 +298,6 @@ class QuestionBank:
         history = state.get("history", [])
         excluded = [h.get("question", "") for h in history]
         asked_stems = [h.get("question", "")[:180] for h in history]
-
-        # Prerequisite & KG context
         kg_pre = [self.reg.names[u] for u in self.reg.prereq[sk]]
         kg_rel = [
             self.reg.names[j]
@@ -406,9 +381,6 @@ class QuestionBank:
         category = state.get("category", "skill_based")
         history = state.get("history", [])
         self.generation_log.append({"skill": name, "difficulty": d, "type": ty, "category": category})
-
-        # Try structured, action-conditioned generation twice; each retry includes
-        # the complete exclusions and asks the model to choose another aspect.
         for attempt in range(2):
             retry_state = dict(state)
             if attempt:
@@ -433,15 +405,9 @@ class QuestionBank:
                     )
                     self.cache.setdefault(key, []).append(q_data)
                     return q_data
-
-        # Category-specific, non-repeating fallbacks are used when Gemini is
-        # unavailable or returns duplicate/invalid JSON. Coding remains executable.
         q_data = self._curated_for_category(name, d, ty, state)
         if not is_duplicate(q_data["question"], history):
             return q_data
-
-        # Rotate through distinct aspects before failing loudly. Never return a
-        # duplicate silently, even if a long session exhausted the fallback set.
         for aspect in FALLBACK_ASPECTS:
             candidate = self._curated_for_category(name, d, ty, {**state, "aspect": aspect, "variant": True})
             if not is_duplicate(candidate["question"], history):
@@ -534,7 +500,6 @@ class QuestionBank:
 
     @staticmethod
     def _generic_coding_item(name, difficulty):
-        """Distinct executable Python challenges for other coding-capable skills."""
         items = {
             0: dict(
                 q=f"Implement `count_occurrences(items, target)` for a {name} exercise. Return how many times target appears, including correct behavior for an empty input.",
