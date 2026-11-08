@@ -10,21 +10,9 @@ from .bkt import BayesianKnowledgeTracer
 from .category_agent import CategoryRLAgent
 from .question_bank import QuestionExhaustedError
 
-# Neutral benchmark threshold on the logit scale (0.0 represents solid competent baseline)
 DEFAULT_TARGET_COMPETENCY = 0.0
 
-
 class InterviewSession:
-    """
-    Live Interview Session driven by the Primary Research Architecture:
-    - Extracts candidate competencies from resume & job description using the Knowledge Graph
-    - Drives adaptive question sequencing via the trained RL policy
-    - Tracks candidate latent competency via 71-grid Bayesian IRT with Knowledge Graph neighbor sharing
-    - Calibrates updates using Evaluator Confidence (c_eval) to prevent noise propagation
-    - Employs adaptive stopping when target confidence (uncertainty sd <= threshold) is attained
-    - Computes 95% Confidence Intervals, z-scores, and human-review flags
-    """
-
     def __init__(
         self,
         policy,
@@ -54,21 +42,18 @@ class InterviewSession:
         if isinstance(self.experience_text, list):
             self.experience_text = "\n".join(self.experience_text)
 
-        # 1. Skill extraction from resume and JD
         res = reg.extract(resume_text)
         jd = reg.extract(role_text or resume_text)
         counts = {
             k: jd["found"].get(k, 0) + (0.5 * res["found"].get(k, 0) if role_text else 0)
             for k in (jd["found"] if role_text else res["found"])
         }
-        # Communication is a real, non-coding assessment dimension. The existing
-        # feature-based policy can score it without changing the checkpoint shape.
+
         if "Communication & Leadership" in reg.idx:
             counts[reg.idx["Communication & Leadership"]] = max(
                 counts.get(reg.idx["Communication & Leadership"], 0.0), 0.35
             )
 
-        # Fallback to general skills if fewer than 2 recognized
         if len(counts) < 2:
             default_skills = ["Python", "DSA", "SQL", "Machine Learning"]
             for s in default_skills:
@@ -80,8 +65,6 @@ class InterviewSession:
         if communication is not None and communication not in top:
             top[-1] = communication
         self.unknown = sorted(set(res.get("unknown", []) + jd.get("unknown", [])))
-
-        # 2. Extract resume claim levels (0=beginner, 1=intermediate, 2=expert)
         claim = np.full(reg.N, -1)
         for line in resume_text.splitlines():
             lvl = (
@@ -97,7 +80,6 @@ class InterviewSession:
             if claim[k] < 0 and k in res.get("found", {}):
                 claim[k] = 1
 
-        # 3. Initialize InterviewEnv in real-candidate mode
         cfg = EnvCfg(
             use_graph=True,
             use_eig_feat=True,
@@ -130,8 +112,6 @@ class InterviewSession:
     def next_question(self):
         if self.env.done:
             return None
-        # If an action has no distinct question left, temporarily mask it and
-        # let the trained policy choose its next-best legal action.
         available = np.asarray(self.obs["m"], dtype=bool).copy()
         excluded_categories_by_action = {}
         while available.any():
@@ -185,8 +165,6 @@ class InterviewSession:
             except QuestionExhaustedError:
                 excluded_categories_by_action.setdefault(a, set()).add(category)
         else:
-            # Complete only when no legal action can produce a distinct
-            # question. Keep a clear reason for the candidate-facing UI.
             self.cur = None
             self.env.done = True
             self.end_reason = "question_bank_exhausted"
@@ -226,16 +204,14 @@ class InterviewSession:
             raise ValueError("No active question to submit an answer for.")
         a, sk, q = self.cur
         eval_dict = self.ev.score(q, answer, reasoning=reasoning)
-
         score = float(eval_dict.get("score", 0.5))
         c_eval = float(eval_dict.get("evaluator_confidence", 0.85))
         fb = eval_dict.get("feedback", "Evaluation complete.")
         bkt_mastery = self.bkt.update_from_score(self.reg.names[sk], score)
-
         mu0 = float(self.env.belief.mu[sk])
         sd0 = float(self.env.belief.sd[sk])
 
-        # Step environment with reliability-calibrated Bayesian update
+        #step environment with reliability-calibrated bayesian update
         self.obs, r, done, info = self.env.step(a, score=score, evaluator_confidence=c_eval)
         if done:
             if info.get("stopped_early"):
@@ -305,7 +281,6 @@ class InterviewSession:
         )
 
     def report(self):
-        """Construct candidate competency evaluation report."""
         b = self.env.belief
         rows = []
         for slot, k in enumerate(self.role):
@@ -341,7 +316,6 @@ class InterviewSession:
         return pd.DataFrame(rows)
 
     def plot(self, ax=None):
-        """Plot competency estimates with 95% confidence intervals against requirements."""
         r = self.report()
         if ax is None:
             fig, ax = plt.subplots(figsize=(8, max(3.5, 0.5 * len(r) + 1.5)))
