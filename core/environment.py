@@ -83,11 +83,6 @@ def make_candidate(rng, reg, probs):
 
 
 class InterviewEnv:
-    """
-    Observation = dict(g=global[NG], f=action-features[A_MAX,NF], m=valid-mask[A_MAX]).
-    Action index = ((slot * 3) + difficulty) * 2 + type.
-    """
-
     def __init__(self, cfg=None, reg=REG):
         self.cfg = cfg or EnvCfg()
         self.reg = reg
@@ -124,7 +119,6 @@ class InterviewEnv:
         return self._obs()
 
     def reset_custom(self, role_ids, weights, req, claim, budget):
-        """Real candidate interview: competency beliefs update via incoming observations."""
         self.sim = False
         self.theta = None
         self.arche = "real"
@@ -271,7 +265,7 @@ class InterviewEnv:
         score = float(score)
 
         p1 = self.P1[d, ty]
-        # Bayesian update with evaluator reliability calibration
+        #bayesian update with evaluator reliability calibration
         self.belief.update(
             sk,
             score,
@@ -284,12 +278,8 @@ class InterviewEnv:
         dH = wH_before - self._wH()
         cov = float((self.cnt[: self.K] > 0).mean())
         r = c.r_info * dH + c.r_coverage * cov - c.r_cost * COST[ty]
-
-        # Confidence reward bonus when skill uncertainty drops below threshold
         if self.belief.sd[sk] < c.stop_uncertainty_threshold:
             r += c.r_conf_bonus
-
-        # Check adaptive stopping condition
         max_role_sd = float(self.belief.sd[self.role].max())
         all_skills_covered = cov >= 0.99
         min_questions = max(self.K, int(c.min_questions_before_stop))
