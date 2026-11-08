@@ -1,24 +1,14 @@
-"""Seeded, paired policy evaluation for the synthetic adaptive-interview benchmark.
-
-Primary endpoint: candidate-weighted competency RMSE on held-out domains.
-Secondary endpoints: return, decision accuracy, success, coverage, question count,
-and invalid actions. Results retain model-seed and episode-seed identifiers.
-"""
-
 from pathlib import Path
-
 import numpy as np
-
 from .action_net import load_policy
 from .environment import EnvCfg, HELDOUT_DOMAINS, InterviewEnv
-
 
 class HeuristicPolicy:
     def __init__(self, method, seed=0):
         self.method = method
         self.rng = np.random.default_rng(seed)
         self.name = method
-
+        
     def __call__(self, obs, env=None):
         valid = np.flatnonzero(obs["m"])
         if not len(valid):
@@ -59,13 +49,7 @@ def _run_episode(policy, episode_seed, model_seed, method):
         "stopped_early": int(final.get("stopped_early", False)),
     }
 
-
 def run_seeded_benchmark(checkpoint_dir, episodes=300, base_seed=91000):
-    """Evaluate each available trained checkpoint on common held-out episodes.
-
-    Each training checkpoint is treated as a model-seed replicate. Heuristics are
-    included as non-trained reference policies. No tuning occurs on these episodes.
-    """
     checkpoint_dir = Path(checkpoint_dir)
     checkpoints = sorted(checkpoint_dir.glob("*_seed*.pt"))
     if not checkpoints:
@@ -86,13 +70,6 @@ def run_seeded_benchmark(checkpoint_dir, episodes=300, base_seed=91000):
 
 
 def summarize_seeded_benchmark(rows, bootstrap_samples=10000, seed=20261103):
-    """Summarize per-training-seed means with a hierarchical percentile bootstrap.
-
-    Training seeds are resampled first, then episodes within each selected seed.
-    Heuristics have one fixed rule and therefore use episode-only resampling.
-    Three training seeds still give limited between-training-run precision; the
-    reported intervals should be read with that limitation in mind.
-    """
     rng = np.random.default_rng(seed)
     metrics = ("return", "success", "weighted_rmse", "decision_accuracy", "coverage", "questions", "invalid_actions")
     summaries = []
@@ -130,13 +107,11 @@ def summarize_seeded_benchmark(rows, bootstrap_samples=10000, seed=20261103):
 
 
 def paired_difference_intervals(rows, metric="weighted_rmse", reference="MaxEIG", bootstrap_samples=10000, seed=20261104):
-    """Paired episode-level differences versus a named reference (method - reference)."""
     rng = np.random.default_rng(seed)
     methods = sorted({r["method"] for r in rows} - {reference})
     ref_by_episode = {r["episode_seed"]: float(r[metric]) for r in rows if r["method"] == reference}
     results = []
     for method in methods:
-        # Average trained model replicates within each common episode, then pair.
         by_episode = {}
         for r in rows:
             if r["method"] == method and r["episode_seed"] in ref_by_episode:
