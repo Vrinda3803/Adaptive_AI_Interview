@@ -1,40 +1,13 @@
 import json
 import re
 import numpy as np
-
 from .question_bank import run_code_tests
 
-
 class AnswerEvaluator:
-    """
-    Evidence-Grounded Technical Answer Evaluator:
-    - Structured multi-dimensional scoring: relevance, technical correctness, evidence of understanding,
-      missing concepts, practical reasoning, and evaluator confidence.
-    - Evaluator reliability output: c_eval in [0.0, 1.0] to calibrate Bayesian belief updates.
-    - Distinguishes between incorrect, partially correct, correct with insufficient explanation,
-      ambiguous answers, and answers needing human review.
-    - Never penalizes candidates merely for phrasing or wording differences.
-    """
-
     def __init__(self, use_llm=True):
         self.use_llm = use_llm
 
     def score(self, q, answer, reasoning=""):
-        """
-        Evaluate candidate response.
-        Returns:
-            dict containing:
-                score: float in [0.0, 1.0]
-                evaluator_confidence: float in [0.0, 1.0]
-                relevance: float in [0.0, 1.0]
-                technical_correctness: float in [0.0, 1.0]
-                feedback: str
-                evidence_of_understanding: str
-                missing_concepts: list[str]
-                practical_reasoning: str
-                needs_human_review: bool
-                status: str (e.g. 'correct', 'partially_correct', 'ambiguous', 'incorrect')
-        """
         cleaned_answer = (answer or "").strip()
         if not cleaned_answer:
             return {
@@ -50,7 +23,6 @@ class AnswerEvaluator:
                 "status": "incorrect",
             }
 
-        # 1. Coding items: execute unit tests in isolated subprocess
         if q.get("tests"):
             score, res = run_code_tests(cleaned_answer, q["tests"])
             code_score = float(np.clip(score, 0.0, 1.0))
@@ -60,11 +32,9 @@ class AnswerEvaluator:
             total = res.get("total", len(q["tests"]))
             has_error = bool(res.get("error"))
             status = "correct" if score >= 0.99 else "partially_correct" if score > 0 else "incorrect"
-
             fb = f"{passed}/{total} hidden unit tests passed; problem-solving explanation scored {logic_score:.0%}."
             if has_error:
                 fb += f" Runtime execution error: {res['error']}"
-
             return {
                 "score": score,
                 "evaluator_confidence": 0.95 if not has_error else 0.80,
@@ -80,11 +50,9 @@ class AnswerEvaluator:
                 "logic_score": logic_score,
             }
 
-        # 2. Conceptual & Practical items: Evaluate using Gemini
         if self.use_llm:
             try:
                 from llm.gemini_client import generate_response
-
                 prompt = f"""
                 You are a fair, objective technical interview evaluator assessing a candidate's verbal/written answer.
 
@@ -158,7 +126,6 @@ class AnswerEvaluator:
             except Exception:
                 pass  # Fallback to calibrated rubric evaluator
 
-        # Behavioural fallback assesses STAR-like structure, not technical vocabulary.
         if q.get("category") == "hr_behavioral":
             answer_l = cleaned_answer.casefold()
             anchors = ("situation", "task", "action", "result", "team", "communicat", "conflict", "deadline", "feedback", "lead")
@@ -173,7 +140,6 @@ class AnswerEvaluator:
                 "needs_human_review": True, "status": "needs_human_review",
             }
 
-        # 3. Fallback: Evidence-grounded keyword rubric evaluator
         a = cleaned_answer.lower()
         expected = q.get("expected_evidence") or [k for k in q.get("keywords", [])]
         if not expected:
